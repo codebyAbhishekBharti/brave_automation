@@ -39,9 +39,15 @@ class Automate_brave_bat_calc:
             return None
         else :
             self.starting_profile=starting_profile-1                  #sets the starting profile
-        self.excel_data=[[],[],[],[],[]]  #Date Time Profile Min Max
-        self.current_datetime = datetime.now()
-        self.browser_opener()
+        # self.excel_data=[[],[],[],[],[]]  #Date Time Profile Min Max
+        self.excel_data=[] #Date Time Profile Min Max
+        # self.excel_data=[
+        #     ['23/01/2024', '01:09:49', 'Profile 1', 1.672, 2.205],
+        #     ['23/01/2024', '01:09:49', 'profile 10', 1.096, 1.415],
+        #     ['23/01/2024', '01:09:49', 'profile 11', 1.076, 1.385]
+        # ]
+
+        # self.browser_opener()
         # print(self.excel_data)
         # print(type(self.excel_data[0]))
         self.sotre_excel_data()
@@ -51,16 +57,13 @@ class Automate_brave_bat_calc:
     
     def sotre_excel_data(self):
         """This func will store the excel data into excel file"""
-        # Specify the Excel file path
-        excel_file_path = "data.xlsx"
+        excel_file_path = "data.xlsx"                # Specify the Excel file path
         try:
             # Try to load the existing workbook
             wb = load_workbook(excel_file_path)
             ws = wb.active
             # Insert data
-            transposed_data = list(map(list, zip(*self.excel_data)))
-            # Append transposed data to the worksheet
-            for row in transposed_data:
+            for row in self.excel_data:
                 ws.append(row)
         except FileNotFoundError:
             # If the file doesn't exist, create a new workbook, add header, and insert data
@@ -70,9 +73,7 @@ class Automate_brave_bat_calc:
             header = ["Date", "Time", "Profile", "Min", "Max"]
             ws.append(header)
             # Insert data
-            transposed_data = list(map(list, zip(*self.excel_data)))
-            # Append transposed data to the worksheet
-            for row in transposed_data:
+            for row in self.excel_data:
                 ws.append(row)
         finally:
             # Save the workbook to the specified file path
@@ -92,7 +93,8 @@ class Automate_brave_bat_calc:
             pyautogui.press('tab')
             pyautogui.hotkey('ctrl','c')
             copied_data = pyperclip.paste()
-            self.excel_data[2].append(copied_data)
+            # self.excel_data[2].append(copied_data)
+            self.excel_data.append([copied_data])
             pyautogui.hotkey('shift','tab')
             pyautogui.press('enter')              #presses enter to open profile
             # do your work here 
@@ -123,7 +125,7 @@ class Automate_brave_bat_calc:
         pyautogui.hotkey('ctrl', 'c')                #copy the selected text
         copied_data = pyperclip.paste()              #paste the copied data into a variable
         return copied_data
-    
+
     def data_storer(self,copied_data):
         """This func is will show total profit of the day and store data in excel file"""
         numeric_values = [float(match) for match in re.findall(r'[-+]?\d*\.\d+|\d+', copied_data)]
@@ -131,12 +133,17 @@ class Automate_brave_bat_calc:
         max_value = numeric_values[1]
         self.m+=min_value
         self.M+=max_value
-        current_date = self.current_datetime.strftime("%d/%m/%Y")
-        current_time = self.current_datetime.strftime("%H:%M:%S")
-        self.excel_data[0].append(current_date)
-        self.excel_data[1].append(current_time)
-        self.excel_data[3].append(min_value)
-        self.excel_data[4].append(max_value)
+        current_datetime = datetime.now()
+        current_date = current_datetime.strftime("%d/%m/%Y")
+        current_time = current_datetime.strftime("%H:%M:%S")
+        # self.excel_data[0].append(current_date)
+        # self.excel_data[1].append(current_time)
+        # self.excel_data[3].append(min_value)
+        # self.excel_data[4].append(max_value)
+        self.excel_data[len(self.excel_data)-1].insert(0,current_time)
+        self.excel_data[len(self.excel_data)-1].insert(0,current_date)
+        self.excel_data[len(self.excel_data)-1].append(min_value)
+        self.excel_data[len(self.excel_data)-1].append(max_value)
 
     def automator(self):
         """this function will handle all the process to automate particular page"""
