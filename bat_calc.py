@@ -41,13 +41,7 @@ class Automate_brave_bat_calc:
             self.starting_profile=starting_profile-1                  #sets the starting profile
         # self.excel_data=[[],[],[],[],[]]  #Date Time Profile Min Max
         self.excel_data=[] #Date Time Profile Min Max
-        # self.excel_data=[
-        #     ['23/01/2024', '01:09:49', 'Profile 1', 1.672, 2.205],
-        #     ['23/01/2024', '01:09:49', 'profile 10', 1.096, 1.415],
-        #     ['23/01/2024', '01:09:49', 'profile 11', 1.076, 1.385]
-        # ]
-
-        # self.browser_opener()
+        self.browser_opener()
         # print(self.excel_data)
         # print(type(self.excel_data[0]))
         self.sotre_excel_data()
