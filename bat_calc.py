@@ -39,14 +39,11 @@ class Automate_brave_bat_calc:
             return None
         else :
             self.starting_profile=starting_profile-1                  #sets the starting profile
-        # self.excel_data=[[],[],[],[],[]]  #Date Time Profile Min Max
         self.excel_data=[] #Date Time Profile Min Max
         self.browser_opener()
-        # print(self.excel_data)
-        # print(type(self.excel_data[0]))
         self.sotre_excel_data()
-        print("Minimum",self.m)
-        print("Maximum",self.M)
+        print("Minimum",round(self.m,3))
+        print("Maximum",round(self.M,3))
         thread_work_completed=True
     
     def sotre_excel_data(self):
@@ -56,22 +53,18 @@ class Automate_brave_bat_calc:
             # Try to load the existing workbook
             wb = load_workbook(excel_file_path)
             ws = wb.active
-            # Insert data
-            for row in self.excel_data:
+            for row in self.excel_data:                   # Insert data
                 ws.append(row)
         except FileNotFoundError:
             # If the file doesn't exist, create a new workbook, add header, and insert data
             wb = Workbook()
             ws = wb.active
-            # Add header
-            header = ["Date", "Time", "Profile", "Min", "Max"]
+            header = ["Date", "Time", "Profile", "Min", "Max"]  # Add header
             ws.append(header)
-            # Insert data
-            for row in self.excel_data:
+            for row in self.excel_data:                    # Insert data
                 ws.append(row)
         finally:
-            # Save the workbook to the specified file path
-            wb.save(excel_file_path)
+            wb.save(excel_file_path)                       #save the workbook
             print(f"Data has been successfully written to {excel_file_path}")            
 
     def browser_opener(self):
@@ -87,7 +80,6 @@ class Automate_brave_bat_calc:
             pyautogui.press('tab')
             pyautogui.hotkey('ctrl','c')
             copied_data = pyperclip.paste()
-            # self.excel_data[2].append(copied_data)
             self.excel_data.append([copied_data])
             pyautogui.hotkey('shift','tab')
             pyautogui.press('enter')              #presses enter to open profile
@@ -122,7 +114,11 @@ class Automate_brave_bat_calc:
 
     def data_storer(self,copied_data):
         """This func is will show total profit of the day and store data in excel file"""
-        numeric_values = [float(match) for match in re.findall(r'[-+]?\d*\.\d+|\d+', copied_data)]
+        try:
+            numeric_values = [float(match) for match in re.findall(r'[-+]?\d*\.\d+|\d+', copied_data)]
+        except:
+            print("No data found")
+            numeric_values = [0,0]
         min_value = numeric_values[0]
         max_value = numeric_values[1]
         self.m+=min_value
@@ -130,10 +126,6 @@ class Automate_brave_bat_calc:
         current_datetime = datetime.now()
         current_date = current_datetime.strftime("%d/%m/%Y")
         current_time = current_datetime.strftime("%H:%M:%S")
-        # self.excel_data[0].append(current_date)
-        # self.excel_data[1].append(current_time)
-        # self.excel_data[3].append(min_value)
-        # self.excel_data[4].append(max_value)
         self.excel_data[len(self.excel_data)-1].insert(0,current_time)
         self.excel_data[len(self.excel_data)-1].insert(0,current_date)
         self.excel_data[len(self.excel_data)-1].append(min_value)
@@ -141,11 +133,11 @@ class Automate_brave_bat_calc:
 
     def automator(self):
         """this function will handle all the process to automate particular page"""
-        time.sleep(0.7)             #sets delay in pressing tabs so that browser can load properly
-        self.new_tab()              #opens new tab
+        time.sleep(0.7)                             #sets delay in pressing tabs so that browser can load properly
+        self.new_tab()                              #opens new tab
         copied_data = self.data_area_selecter()     #selects the data area
-        self.data_storer(copied_data)     #copies and paste the data into excel file
-        pyautogui.hotkey('ctrl','w')            #closes the add view tab
+        self.data_storer(copied_data)               #copies and paste the data into excel file
+        pyautogui.hotkey('ctrl','w')                #closes the add view tab
 
 def program_terimator():
     """Terminates the whole program if 'q' is pressed or Ctrl+C is used."""

@@ -109,6 +109,7 @@ def program_terimator():
         print("\nCtrl+C detected. Terminating the program.")
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
+    
     total_profiles=18
     total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
