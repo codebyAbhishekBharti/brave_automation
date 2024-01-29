@@ -38,7 +38,7 @@ class Automate_brave_bat_calc:
             thread_work_completed=True
             return None
         else :
-            self.starting_profile=starting_profile-1                  #sets the starting profile
+            self.starting_profile=starting_profile                  #sets the starting profile
         self.excel_data=[] #Date Time Profile Min Max
         self.browser_opener()
         self.sotre_excel_data()
@@ -67,26 +67,55 @@ class Automate_brave_bat_calc:
             wb.save(excel_file_path)                       #save the workbook
             print(f"Data has been successfully written to {excel_file_path}")            
 
+    # def browser_opener(self):
+    #     """this func will open the browser and start the automation"""
+    #     for i in range(self.starting_profile,self.total_profiles):      #loops through the total profiles
+    #         print(f"Profile {i+1}")               #prints on which profile current automation is going on
+    #         os.system("start brave")              #starts edge broswer
+    #         time.sleep(2)                         #wats for 2 seconds so that browser can open successfully
+    #         pyautogui.press('tab')                #presses tab to select profile
+    #         for j in range(3*i):                  #presses tab multiple times to select exect profile
+    #             pyautogui.press('tab')
+    #             # time.sleep(0.1)                 #sets delay in pressing tabs
+    #         pyautogui.press('tab')
+    #         pyautogui.hotkey('ctrl','c')
+    #         copied_data = pyperclip.paste()
+    #         self.excel_data.append([copied_data])
+    #         pyautogui.hotkey('shift','tab')
+    #         pyautogui.press('enter')              #presses enter to open profile
+    #         # do your work here 
+    #         self.automator()                      #runs automator method to start automation works
+    #         time.sleep(0.2)                       #wait a bit so that browser is ready to close
+    #         pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
+    
     def browser_opener(self):
-        """this func will open the browser and start the automation"""
-        for i in range(self.starting_profile,self.total_profiles):      #loops through the total profiles
-            print(f"Profile {i+1}")               #prints on which profile current automation is going on
-            os.system("start brave")              #starts edge broswer
-            time.sleep(2)                         #wats for 2 seconds so that browser can open successfully
-            pyautogui.press('tab')                #presses tab to select profile
-            for j in range(3*i):                  #presses tab multiple times to select exect profile
-                pyautogui.press('tab')
-                # time.sleep(0.1)                 #sets delay in pressing tabs
-            pyautogui.press('tab')
-            pyautogui.hotkey('ctrl','c')
-            copied_data = pyperclip.paste()
-            self.excel_data.append([copied_data])
-            pyautogui.hotkey('shift','tab')
-            pyautogui.press('enter')              #presses enter to open profile
-            # do your work here 
+        """this func will handle the browser opener"""
+        os.system("start brave")              #starts edge broswer
+        time.sleep(2)                         #wats for 2 seconds so that browser can open successfully
+        pyautogui.press('tab')                #presses tab to select profile
+        pyautogui.press('enter')              #presses enter to open profile
+        if(self.starting_profile==1):
+            print(f"Profile 1")              
+            self.excel_data.append([f"Profile 1"])
             self.automator()                      #runs automator method to start automation works
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
+            self.starting_profile+=1
+
+        for i in range(self.starting_profile,self.total_profiles+1):      #loops through the total profiles
+            if(i in [12,13,14,15,17,19]):           #skips the profiles which are not working
+                continue
+            print(f"Profile {i}")
+            time.sleep(1)                         #wait a bit so that browser is ready to close 
+            pyautogui.hotkey('ctrl','shift','m')  #opens profile view
+            time.sleep(0.2)                       #wait a bit so that browser is ready to close
+            for j in range(i-2):
+                pyautogui.press('tab')
+            pyautogui.press('enter')
+            time.sleep(0.2)                       #wait a bit so that browser is ready to close
+            self.excel_data.append([f"Profile {i}"])
+            self.automator()                      #runs automator method to start automation works
             pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
+        pyautogui.hotkey('alt', 'f4')             #closing main profile
 
     def window_centre_click(self):
         """this func will find the centre of the page and click at the centre"""
@@ -152,7 +181,7 @@ def program_terimator():
         exit()                                      #terminates the whole program
 
 if __name__ == '__main__':
-    total_profiles=18
+    total_profiles=24
     total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
