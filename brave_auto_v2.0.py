@@ -70,12 +70,16 @@ class Automate_brave:
             print(f"Profile 1")              
             self.automator()                      #runs automator method to start automation works
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
+            self.starting_profile+=1
 
-        for i in range(self.starting_profile,self.total_profiles):      #loops through the total profiles
-            print(f"Profile {i+1}")              
+        for i in range(self.starting_profile,self.total_profiles+1):      #loops through the total profiles
+            if(i in [12,13,14,15,17,19]):           #skips the profiles which are not working
+                continue
+            print(f"Profile {i}")
+            time.sleep(1)                         #wait a bit so that browser is ready to close 
             pyautogui.hotkey('ctrl','shift','m')  #opens profile view
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
-            for j in range(1,i):
+            for j in range(i-2):
                 pyautogui.press('tab')
             pyautogui.press('enter')
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
@@ -222,7 +226,7 @@ def program_terimator():
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
     
-    total_profiles=4
+    total_profiles=24
     total_adds=12
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
