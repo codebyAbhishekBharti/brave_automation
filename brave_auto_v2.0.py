@@ -228,7 +228,7 @@ def program_terimator():
 if __name__ == '__main__':
     
     total_profiles=24
-    total_adds=12
+    total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
     automation_thread = threading.Thread(target=Automate_brave, args=(total_profiles,total_adds,starting_profile,),daemon=True) #daemon is set true so that program can be terminated by pressing 'q'
