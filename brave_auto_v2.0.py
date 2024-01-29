@@ -42,6 +42,10 @@ class Automate_brave:
         self.add_lower_right_pixel = (1334, 434)                   # Coordinates of the right pixel of the add icon
         self.add_lower_bottom_pixel = (1332, 438)                  # Coordinates of the bottom pixel of the add icon
         self.add_lower_centre_pixel = (1332, 436)                  # Coordinates of the centre pixel of the add icon
+        self.add_middle_left_pixel = (1329, 474)                    # Coordinates of the left pixel of the add icon
+        self.add_middle_right_pixel = (1334, 474)                   # Coordinates of the right pixel of the add icon
+        self.add_middle_bottom_pixel = (1332, 478)                  # Coordinates of the bottom pixel of the add icon
+        self.add_middle_centre_pixel = (1332, 476)                  # Coordinates of the centre pixel of the add icon
         self.add_upper_left_pixel = (1329, 184)                    # Coordinates of the left pixel of the add icon
         self.add_upper_right_pixel = (1334, 184)                   # Coordinates of the right pixel of the add icon
         self.add_upper_bottom_pixel = (1332, 189)                  # Coordinates of the bottom pixel of the add icon
@@ -52,24 +56,30 @@ class Automate_brave:
             thread_work_completed=True
             return None
         else :
-            self.starting_profile=starting_profile-1                  #sets the starting profile
+            self.starting_profile=starting_profile                  #sets the starting profile
         self.browser_opener()
         thread_work_completed=True
-    
+        
     def browser_opener(self):
-        """this func will open the browser and start the automation"""
-        for i in range(self.starting_profile,self.total_profiles):      #loops through the total profiles
-            print(f"Profile {i+1}")               #prints on which profile current automation is going on
-            os.system("start brave")              #starts edge broswer
-            time.sleep(2)                         #wats for 2 seconds so that browser can open successfully
-            pyautogui.press('tab')                #presses tab to select profile
-            for j in range(3*i):                  #presses tab multiple times to select exect profile
-                pyautogui.press('tab')
-                # time.sleep(0.1)                 #sets delay in pressing tabs
-            pyautogui.press('enter')              #presses enter to open profile
-            # do your work here 
+        """this func will handle the browser opener"""
+        os.system("start brave")              #starts edge broswer
+        time.sleep(2)                         #wats for 2 seconds so that browser can open successfully
+        pyautogui.press('tab')                #presses tab to select profile
+        pyautogui.press('enter')              #presses enter to open profile
+        if(self.starting_profile==1):
+            print(f"Profile 1")              
             self.automator()                      #runs automator method to start automation works
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
+
+        for i in range(self.starting_profile,self.total_profiles):      #loops through the total profiles
+            print(f"Profile {i+1}")              
+            pyautogui.hotkey('ctrl','shift','m')  #opens profile view
+            time.sleep(0.2)                       #wait a bit so that browser is ready to close
+            for j in range(1,i):
+                pyautogui.press('tab')
+            pyautogui.press('enter')
+            time.sleep(0.2)                       #wait a bit so that browser is ready to close
+            self.automator()                      #runs automator method to start automation works
             pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
 
     def window_centre_click(self):
@@ -114,9 +124,14 @@ class Automate_brave:
         for i in range(4):              #loops so that news will show up
             self.new_tab()              #opens new tab
             pyautogui.press('pagedown')    #scrolls down the page
-            time.sleep(4.5)                #sets delay so that news can open properly
-            self.check_news_present()      #checks if news is present or not
-            if(self.check_news_present()):
+            time.sleep(1)             #sets delay so that page can load properly
+            flag=False
+            for x in range(5):
+                time.sleep(1)           #sets delay so that page can load properly
+                if(self.check_news_present):
+                    flag=True
+                    break
+            if(flag):
                 self.window_centre_click() #clicks on the news
                 time.sleep(1)              #sets delay for the news to open
                 break
@@ -138,6 +153,17 @@ class Automate_brave:
         if(self.get_pixel_color_from_screen(*self.add_lower_bottom_pixel)==Purple_RGB_Values):
             total_match+=1
         if(self.get_pixel_color_from_screen(*self.add_lower_centre_pixel)==White_RGB_Values):
+            total_match+=1
+        if(total_match>=4):
+            return True
+        total_match=0
+        if(self.get_pixel_color_from_screen(*self.add_middle_left_pixel)==Red_RGB_Values):
+            total_match+=1
+        if(self.get_pixel_color_from_screen(*self.add_middle_right_pixel)==Orange_RGB_Values):
+            total_match+=1
+        if(self.get_pixel_color_from_screen(*self.add_middle_bottom_pixel)==Purple_RGB_Values):
+            total_match+=1
+        if(self.get_pixel_color_from_screen(*self.add_middle_centre_pixel)==White_RGB_Values):
             total_match+=1
         if(total_match>=4):
             return True
@@ -165,7 +191,8 @@ class Automate_brave:
             for i in range(2):                  #loops so that add will be in view
                 pyautogui.press('pagedown')
                 time.sleep(1)                   #sets delay so that page can load properly
-            time.sleep(2)
+            time.sleep(1)
+            #below two lines has some problem
             if(not self.check_add_present()):       #checks if add is present or not
                 not_add_present+=1                  #increases the counter if add is not present
             if(not_add_present>=2):                 #checks if add is not present for 2 times
@@ -195,8 +222,8 @@ def program_terimator():
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
     
-    total_profiles=18
-    total_adds=7
+    total_profiles=4
+    total_adds=12
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
     automation_thread = threading.Thread(target=Automate_brave, args=(total_profiles,total_adds,starting_profile,),daemon=True) #daemon is set true so that program can be terminated by pressing 'q'
