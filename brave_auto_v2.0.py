@@ -85,6 +85,7 @@ class Automate_brave:
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
             self.automator()                      #runs automator method to start automation works
             pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
+        pyautogui.hotkey('alt', 'f4')             #closing main profile
 
     def window_centre_click(self):
         """this func will find the centre of the page and click at the centre"""
