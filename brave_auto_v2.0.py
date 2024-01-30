@@ -15,9 +15,11 @@ The automation program will help me to automate brave to earn bat
 import pyautogui
 import time
 import os
+import cv2
 import threading
 import keyboard
 from PIL import Image
+import numpy as np
 
 class Automate_brave:
     def __init__(self,total_profiles,total_adds=6,starting_profile=1):
@@ -85,13 +87,16 @@ class Automate_brave:
             time.sleep(0.2)                       #wait a bit so that browser is ready to close
             self.automator()                      #runs automator method to start automation works
             pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
-        pyautogui.hotkey('alt', 'f4')             #closing main profile
+        # pyautogui.hotkey('alt', 'f4')             #closing main profile
 
     def window_centre_click(self):
         """this func will find the centre of the page and click at the centre"""
+        pyautogui.click(128,205)
+        return None
         x = self.screen_width // 2       #finds the centre of the page
         y = self.screen_height // 2      #finds the centre of the page
         pyautogui.click(x, y)            # Click on the center
+
 
     def new_tab(self):
         """This func will open new tab properly """
@@ -106,85 +111,63 @@ class Automate_brave:
         image = Image.frombytes('RGB', screenshot.size, screenshot.tobytes())  #Convert the screenshot to a Pillow Image
         pixel_color = image.getpixel((x, y))  # (R, G, B) tuple for coordinates (x, y)
         return pixel_color
-
+        
     def check_news_present(self):
-        """This func will check if news is present or not"""
-        total_match=0
-        RGB_Values = (132,136,156)   #RGB values of the loading icon
-        if(self.get_pixel_color_from_screen(*self.loading_left_pixel)==RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.loading_right_pixel)==RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.loading_top_pixel)==RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.loading_bottom_pixel)==RGB_Values):
-            total_match+=1
-        if(total_match>=2):
-            return False 
+        """This func will check if news is present or not
+            by check the darkness of the news section
+        """
+        screenshot = pyautogui.screenshot()
+        img = np.array(screenshot) # Convert the image to a NumPy array
+        x1, y1, x2, y2 = (675, 365, 1200, 500) # Extract region of interest based on provided coordinates
+        threshold = 90 # Set threshold for determining "darkness"
+        roi = img[y1:y2, x1:x2]
+        gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY) # Convert the region to grayscale
+        average_brightness = np.mean(gray_roi) # Compute the average brightness within the region
+        is_dark_region = average_brightness < threshold # Determine if the region is dark based on the threshold
+        if(is_dark_region):
+            return False
         else:
             return True
 
     def first_news_view(self):
         """this func will open first news so that all the ads will show up"""
-        for i in range(4):              #loops so that news will show up
-            self.new_tab()              #opens new tab
-            pyautogui.press('pagedown')    #scrolls down the page
-            time.sleep(1)             #sets delay so that page can load properly
-            flag=False
-            for x in range(5):
-                time.sleep(1)           #sets delay so that page can load properly
-                if(self.check_news_present):
-                    flag=True
-                    break
-            if(flag):
-                self.window_centre_click() #clicks on the news
-                time.sleep(1)              #sets delay for the news to open
-                break
-            else:
-                print("News is not present")
-            pyautogui.hotkey('ctrl','w')            #closes the news view tab
+        # https://www.digitaltrends.com/movies/underrated-amazon-prime-video-movies-winter-2024/
+        #type it using pyautogui
+        self.new_tab()
+        news_link="https://www.digitaltrends.com/movies/underrated-amazon-prime-video-movies-winter-2024/"
+        time.sleep(1)
+        pyautogui.click(574,65)
+        pyautogui.typewrite(news_link)
+        pyautogui.press('enter')
+        time.sleep(1.5)
+        pyautogui.hotkey('ctrl','w')            #closes the news view tab
+        # time.sleep(0.2)
     
+    def take_screenshot(self):
+        """This func will take screenshot and return it"""
+        screenshot = pyautogui.screenshot()
+        screenshot = np.array(screenshot)
+        screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
+        return screenshot
+
+    def check_image_presence(self,template_path, screenshot):
+        """This func will check if the template image is present in the screenshot"""
+        template = cv2.imread(template_path)
+        result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
+        threshold = 0.8  # Adjust this threshold based on your needs
+        locations = np.where(result >= threshold)
+        return len(locations[0]) > 0
+
     def check_add_present(self):
-        """This func will check if add is present or not"""
-        total_match=0
-        Red_RGB_Values = (255,71,36)
-        Orange_RGB_Values = (158, 31, 99)
-        Purple_RGB_Values = (102, 45, 145)
-        White_RGB_Values = (255, 255, 255)
-        if(self.get_pixel_color_from_screen(*self.add_lower_left_pixel)==Red_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_lower_right_pixel)==Orange_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_lower_bottom_pixel)==Purple_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_lower_centre_pixel)==White_RGB_Values):
-            total_match+=1
-        if(total_match>=4):
+        """ This func will check if add is loaded or not"""
+        template_path = "Ad_logo.png"
+        # Take a screenshot
+        screenshot = self.take_screenshot()
+        # Check if the template image is present in the screenshot
+        if self.check_image_presence(template_path, screenshot):
             return True
-        total_match=0
-        if(self.get_pixel_color_from_screen(*self.add_middle_left_pixel)==Red_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_middle_right_pixel)==Orange_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_middle_bottom_pixel)==Purple_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_middle_centre_pixel)==White_RGB_Values):
-            total_match+=1
-        if(total_match>=4):
-            return True
-        total_match=0
-        if(self.get_pixel_color_from_screen(*self.add_upper_left_pixel)==Red_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_upper_right_pixel)==Orange_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_upper_bottom_pixel)==Purple_RGB_Values):
-            total_match+=1
-        if(self.get_pixel_color_from_screen(*self.add_upper_centre_pixel)==White_RGB_Values):
-            total_match+=1
-        if(total_match>=4):
-            return True
-        
-        return False
+        else:
+            return False
 
     def add_view_handler(self):
         """this func will make sure to view all adds """
@@ -200,12 +183,12 @@ class Automate_brave:
             #below two lines has some problem
             if(not self.check_add_present()):       #checks if add is present or not
                 not_add_present+=1                  #increases the counter if add is not present
-            if(not_add_present>=2):                 #checks if add is not present for 2 times
+            if(not_add_present>=1):                 #checks if add is not present for 2 times
                 break                               #breaks the loop
             pyautogui.press('f5')               #refreshes the page for new add
         pyautogui.hotkey('ctrl','w')            #closes the add view tab
         time.sleep(0.1)                         #waits till current tab closes
-        pyautogui.hotkey('ctrl','w')            #closes the news view tab
+        # pyautogui.hotkey('ctrl','w')            #closes the news view tab
 
     def automator(self):
         """this function will handle all the process to automate particular page"""
@@ -226,10 +209,9 @@ def program_terimator():
         print("\nCtrl+C detected. Terminating the program.")
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
-    
     total_profiles=24
     total_adds=7
-    starting_profile=1                #it must be 1<=starting_profile<=total_profiles
+    starting_profile=5                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
     automation_thread = threading.Thread(target=Automate_brave, args=(total_profiles,total_adds,starting_profile,),daemon=True) #daemon is set true so that program can be terminated by pressing 'q'
     automation_thread.start()         #starts the thread
