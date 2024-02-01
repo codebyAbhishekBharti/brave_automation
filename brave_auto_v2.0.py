@@ -34,24 +34,6 @@ class Automate_brave:
             self.total_profiles=total_profiles                        #Sets total profiles for automation
         self.screen_width, self.screen_height = pyautogui.size()  #gets the screen size
         self.total_adds=total_adds                                #set to 7, 6 is exact
-        
-        self.loading_left_pixel = (928, 455)                      # Coordinates of the left pixel of the loading bar
-        self.loading_right_pixel = (971, 455)                    # Coordinates of the right pixel of the loading bar
-        self.loading_top_pixel = (950, 434)                       # Coordinates of the top pixel of the loading bar
-        self.loading_bottom_pixel = (950, 476)                    # Coordinates of the bottom pixel of the loading bar
-
-        self.add_lower_left_pixel = (1329, 434)                    # Coordinates of the left pixel of the add icon
-        self.add_lower_right_pixel = (1334, 434)                   # Coordinates of the right pixel of the add icon
-        self.add_lower_bottom_pixel = (1332, 438)                  # Coordinates of the bottom pixel of the add icon
-        self.add_lower_centre_pixel = (1332, 436)                  # Coordinates of the centre pixel of the add icon
-        self.add_middle_left_pixel = (1329, 474)                    # Coordinates of the left pixel of the add icon
-        self.add_middle_right_pixel = (1334, 474)                   # Coordinates of the right pixel of the add icon
-        self.add_middle_bottom_pixel = (1332, 478)                  # Coordinates of the bottom pixel of the add icon
-        self.add_middle_centre_pixel = (1332, 476)                  # Coordinates of the centre pixel of the add icon
-        self.add_upper_left_pixel = (1329, 184)                    # Coordinates of the left pixel of the add icon
-        self.add_upper_right_pixel = (1334, 184)                   # Coordinates of the right pixel of the add icon
-        self.add_upper_bottom_pixel = (1332, 189)                  # Coordinates of the bottom pixel of the add icon
-        self.add_upper_centre_pixel = (1332, 185)                  # Coordinates of the centre pixel of the add icon
 
         if(starting_profile<1 or starting_profile>total_profiles):#checks if starting profile is valid or not
             print("Invalid starting profile, starting profile must be 1<=starting_profile<=total_profiles")
@@ -118,16 +100,13 @@ class Automate_brave:
         """
         screenshot = pyautogui.screenshot()
         img = np.array(screenshot) # Convert the image to a NumPy array
-        x1, y1, x2, y2 = (675, 365, 1200, 500) # Extract region of interest based on provided coordinates
+        x1, y1, x2, y2 = (705, 212, 1215, 420) # Extract region of interest based on provided coordinates
         threshold = 90 # Set threshold for determining "darkness"
         roi = img[y1:y2, x1:x2]
         gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY) # Convert the region to grayscale
         average_brightness = np.mean(gray_roi) # Compute the average brightness within the region
         is_dark_region = average_brightness < threshold # Determine if the region is dark based on the threshold
-        if(is_dark_region):
-            return False
-        else:
-            return True
+        return not is_dark_region
 
     def first_news_view(self):
         """this func will open first news so that all the ads will show up"""
@@ -150,51 +129,67 @@ class Automate_brave:
         screenshot = cv2.cvtColor(screenshot, cv2.COLOR_RGB2BGR)
         return screenshot
 
-    def check_image_presence(self,template_path, screenshot):
+    def check_image_presence(self,template_path):
         """This func will check if the template image is present in the screenshot"""
         template = cv2.imread(template_path)
+        screenshot = self.take_screenshot()
         result = cv2.matchTemplate(screenshot, template, cv2.TM_CCOEFF_NORMED)
         threshold = 0.8  # Adjust this threshold based on your needs
         locations = np.where(result >= threshold)
         return len(locations[0]) > 0
+    
+    def news_activator(self):
+        """this func will activate the news is add is not showing up"""
+        self.new_tab()
+        news_link="https://www.digitaltrends.com/movies/underrated-amazon-prime-video-movies-winter-2024/"
+        time.sleep(1)
+        pyautogui.click(574,65)
+        pyautogui.typewrite(news_link)
+        pyautogui.press('enter')
+        time.sleep(1.5)
+        pyautogui.hotkey('ctrl','w')            #closes the news view tab  
 
-    def check_add_present(self):
-        """ This func will check if add is loaded or not"""
-        template_path = "Ad_logo.png"
-        # Take a screenshot
-        screenshot = self.take_screenshot()
-        # Check if the template image is present in the screenshot
-        if self.check_image_presence(template_path, screenshot):
-            return True
-        else:
-            return False
-
+    def wait_for_news_load(self):
+        """This func will wait for the news to load properly"""
+        # self.news_activator()
+        for i in range(3):
+            self.new_tab()
+            for _ in range(7):
+                if(self.check_image_presence("news.png")):
+                    time.sleep(1)
+                    pyautogui.click(945,840)
+                    time.sleep(1.2)
+                    return 1
+                time.sleep(1)
+            pyautogui.hotkey('ctrl','w')
+        return -1
+    
     def add_view_handler(self):
         """this func will make sure to view all adds """
         x = self.screen_width // 2              #finds the centre of the page on x axis
-        not_add_present=0                        #sets the counter for adds not present
-        for _ in range(self.total_adds):        #loops through the total adds
-            pyautogui.click(x,300)              #clicks anywhere on screen to make sure that page is in view
-            time.sleep(0.2)                     #sets delay so that page can load properly
-            for i in range(2):                  #loops so that add will be in view
-                pyautogui.press('pagedown')
-                time.sleep(1)                   #sets delay so that page can load properly
+        not_add_present=0                        #sets the counter for adds not present  
+        for i in range(self.total_adds):        #loops through the total adds
             time.sleep(1)
-            #below two lines has some problem
-            if(not self.check_add_present()):       #checks if add is present or not
+            pyautogui.scroll(-1000)         #scrolls down to add
+            time.sleep(1)                   #sets delay so that page can load properly
+            if(not self.check_image_presence("Ad_logo_new2.png")):       #checks if add is present or not
                 not_add_present+=1                  #increases the counter if add is not present
             if(not_add_present>=1):                 #checks if add is not present for 2 times
                 break                               #breaks the loop
             pyautogui.press('f5')               #refreshes the page for new add
         pyautogui.hotkey('ctrl','w')            #closes the add view tab
         time.sleep(0.1)                         #waits till current tab closes
-        # pyautogui.hotkey('ctrl','w')            #closes the news view tab
+
+    def window_maximise(self):
+        """this func will maximise the window"""
+        pyautogui.hotkey('alt','space')            #maximises the window
+        pyautogui.press('x')                       #maximises the window
+        time.sleep(0.1)
 
     def automator(self):
         """this function will handle all the process to automate particular page"""
         time.sleep(0.7)             #sets delay in pressing tabs so that browser can load properly
-        self.first_news_view()      #opens first news
-        self.new_tab()              #opens new tab
+        self.wait_for_news_load()      #opens first news
         self.add_view_handler()     #handles all the adds to view properly
 
 def program_terimator():
@@ -209,9 +204,9 @@ def program_terimator():
         print("\nCtrl+C detected. Terminating the program.")
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
-    total_profiles=24
+    total_profiles=1
     total_adds=7
-    starting_profile=5                #it must be 1<=starting_profile<=total_profiles
+    starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
     automation_thread = threading.Thread(target=Automate_brave, args=(total_profiles,total_adds,starting_profile,),daemon=True) #daemon is set true so that program can be terminated by pressing 'q'
     automation_thread.start()         #starts the thread
