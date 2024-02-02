@@ -71,22 +71,13 @@ class Automate_brave:
             pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
         # pyautogui.hotkey('alt', 'f4')             #closing main profile
 
-    def window_centre_click(self):
-        """this func will find the centre of the page and click at the centre"""
-        pyautogui.click(128,205)
-        return None
-        x = self.screen_width // 2       #finds the centre of the page
-        y = self.screen_height // 2      #finds the centre of the page
-        pyautogui.click(x, y)            # Click on the center
-
-
     def new_tab(self):
         """This func will open new tab properly """
         time.sleep(0.5)                 #sets delay in pressing tabs so that browser can load properly
         pyautogui.hotkey('ctrl','t')    #opens new tab
         time.sleep(1)                   #sets delay so that new tab can open properly
-        self.window_centre_click()      #clicks on the centre of the page so that page view can be worked on not the address bar
-    
+        pyautogui.click(128,205)        #Random click to get out of address bar
+
     def get_pixel_color_from_screen(self,x, y):
         """This func will return the pixel color at the given coordinates in RGB format"""
         screenshot = pyautogui.screenshot() #takes screenshot
@@ -172,7 +163,7 @@ class Automate_brave:
             time.sleep(1)
             pyautogui.scroll(-1000)         #scrolls down to add
             time.sleep(1)                   #sets delay so that page can load properly
-            if(not self.check_image_presence("Ad_logo_new2.png")):       #checks if add is present or not
+            if(not self.check_image_presence("Ad_logo_new.png")):       #checks if add is present or not
                 not_add_present+=1                  #increases the counter if add is not present
             if(not_add_present>=1):                 #checks if add is not present for 2 times
                 break                               #breaks the loop
@@ -204,7 +195,7 @@ def program_terimator():
         print("\nCtrl+C detected. Terminating the program.")
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
-    total_profiles=1
+    total_profiles=24
     total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
