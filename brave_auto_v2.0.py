@@ -48,30 +48,28 @@ class Automate_brave:
             self.starting_profile=starting_profile                  #sets the starting profile
         self.excel_data=[]                                    #Date Time Profile Min_start Max_satrt Min_end Max_end Total_Adds
         self.software_mode=software_mode
+        self.directory_path = "D:\\mycodes\\python codes\\brave auto\\"
+        if(self.software_mode!=1):
+            self.excel_file_path = f"{self.directory_path}new_data.xlsx"                # Specify the Excel file path
+            self.excel_file_opener()                            #opens the excel file
         self.browser_opener()
-        if(self.software_mode!=1):self.excel_data_to_file()
+        if(self.software_mode!=1):
+            print(f"Data has been successfully written to {self.excel_file_path}")
         thread_work_completed=True
-    
-    def excel_data_to_file(self):
-        """This func will store the excel data into excel file"""
-        excel_file_path = "new_data.xlsx"                # Specify the Excel file path
+
+    def excel_file_opener(self):
+        """This func will open the excel file"""
         try:
             # Try to load the existing workbook
-            wb = load_workbook(excel_file_path)
-            ws = wb.active
-            for row in self.excel_data:                   # Insert data
-                ws.append(row)
+            self.wb = load_workbook(self.excel_file_path)
+            self.ws = self.wb.active
         except FileNotFoundError:
             # If the file doesn't exist, create a new workbook, add header, and insert data
-            wb = Workbook()
-            ws = wb.active
+            self.wb = Workbook()
+            self.ws = self.wb.active
             header = ["Date", "Time", "Profile", "Min_start", "Max_start", "Min_end", "Max_end", "Total_Adds","Min_earn","Max_earn"]  # Add header
-            ws.append(header)
-            for row in self.excel_data:                    # Insert data
-                ws.append(row)
-        finally:
-            wb.save(excel_file_path)                       #save the workbook
-            print(f"Data has been successfully written to {excel_file_path}")
+            self.ws.append(header)
+            self.wb.save(self.excel_file_path)                       #save the workbook
         
     def browser_opener(self):
         """this func will handle the browser opener"""
@@ -181,6 +179,9 @@ class Automate_brave:
         copied_data = pyperclip.paste()              #paste the copied data into a variable
         try:
             numeric_values = [float(match) for match in re.findall(r'[-+]?\d*\.\d+|\d+', copied_data)]
+            if(len(numeric_values)!=2):
+                print("Data is not found")
+                numeric_values = [0,0]
         except:
             print("No data found")
             numeric_values = [0,0]
@@ -198,14 +199,16 @@ class Automate_brave:
             current_datetime = datetime.now()               #gets the current date and time
             current_date = current_datetime.strftime("%d/%m/%Y")  #gets the current date
             current_time = current_datetime.strftime("%H:%M:%S")  #gets the current time
-            self.excel_data.append([current_date,current_time,f"profile {self.profile_no}",current_data[0],current_data[1]])  #appends the date time and profile number
+            self.excel_data.extend([current_date,current_time,f"profile {self.profile_no}",current_data[0],current_data[1]])  #appends the date time and profile number
         else:                                                #if data type is 2 then it will store the ending bat data
-            index = len(self.excel_data)-1                                                #gets the index of the last data
-            self.excel_data[index].append(current_data[0])                                #appends the ending bat data
-            self.excel_data[index].append(current_data[1])                                #appends the ending bat data
-            self.excel_data[index].append(total_adds_viwed)                               #appends the total adds viewed
-            self.excel_data[index].append(current_data[0]-self.excel_data[index][3])      #appends the total profit
-            self.excel_data[index].append(current_data[1]-self.excel_data[index][4])      #appends the total profit
+            self.excel_data.append(current_data[0])                                #appends the ending bat data
+            self.excel_data.append(current_data[1])                                #appends the ending bat data
+            self.excel_data.append(total_adds_viwed)                               #appends the total adds viewed
+            self.excel_data.append(current_data[0]-self.excel_data[3])      #appends the total profit
+            self.excel_data.append(current_data[1]-self.excel_data[4])      #appends the total profit
+            self.ws.append(self.excel_data)                                       #appends the data to the excel file
+            self.wb.save(self.excel_file_path)                                         #saves the data to the excel file
+            self.excel_data=[]                                                     #clears the data for next profile
 
     def wait_for_news_load(self):
         """This func will wait for the news to load properly"""
@@ -216,7 +219,7 @@ class Automate_brave:
                 self.excel_data_storer(1)                    #stores the starting bat data
                 if(self.software_mode==2): return            #if software mode is 2 then it will not open the news
             for _ in range(7):                               #for every loop wait for 7 seconds to show the news
-                if(self.check_image_presence("news.png")):   #checks if news is present or not
+                if(self.check_image_presence(f"{self.directory_path}news.png")):   #checks if news is present or not
                     time.sleep(1)
                     pyautogui.click(945,840)                 #clicks on the news icon
                     time.sleep(1.2)
@@ -234,13 +237,15 @@ class Automate_brave:
                 time.sleep(1)
                 pyautogui.scroll(-1000)         #scrolls down to add
                 time.sleep(1)                   #sets delay so that page can load properly
-                if(not self.check_image_presence("Ad_logo_new.png")):       #checks if add is present or not\
+                if(not self.check_image_presence(f"{self.directory_path}Ad_logo_new.png")):       #checks if add is present or not\
                     break
                 viwed_adds+=1
                 pyautogui.press('f5')               #refreshes the page for new add
         if(self.software_mode!=1):                  #if software mode is not 1 then only it will store the data
             for _ in range(4):
                 pyautogui.press('pageup')         #scrolls up to the top of the page
+            pyautogui.press('f5')               #refreshes the page for new add
+            time.sleep(0.1)
             self.excel_data_storer(2,viwed_adds)  #stores the ending bat data
         pyautogui.hotkey('ctrl','w')            #closes the add view tab
         time.sleep(0.1)                         #waits till current tab closes
@@ -269,7 +274,7 @@ def program_terimator():
         print("\nCtrl+C detected. Terminating the program.")
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
-    total_profiles=5
+    total_profiles=2
     total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable
@@ -280,5 +285,4 @@ if __name__ == '__main__':
     except Exception as e:
         print("Error: ",e)
         thread_work_completed=True
-        sys.exit()
     program_terimator()               #starts the program terminator
