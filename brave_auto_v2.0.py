@@ -18,23 +18,19 @@ import os
 import cv2
 import threading
 import keyboard
-from PIL import Image
 import numpy as np
 from datetime import datetime
 import pyperclip
 import re
-import sys
 from openpyxl import Workbook, load_workbook
 
 class Automate_brave:
     def __init__(self,total_profiles,total_adds=6,starting_profile=1,software_mode=1):
-        global thread_work_completed  # Use the global keyword to modify the global variable
         #remove failsafe of pyautogui
         pyautogui.FAILSAFE = False
         if(total_profiles<1):
             print("Invalid total profiles, total profiles must be greater than 0")
-            thread_work_completed=True
-            return None
+            exit()
         else:
             self.total_profiles=total_profiles                        #Sets total profiles for automation
         self.screen_width, self.screen_height = pyautogui.size()  #gets the screen size
@@ -42,8 +38,7 @@ class Automate_brave:
 
         if(starting_profile<1 or starting_profile>total_profiles):#checks if starting profile is valid or not
             print("Invalid starting profile, starting profile must be 1<=starting_profile<=total_profiles")
-            thread_work_completed=True
-            return None
+            exit()
         else :
             self.starting_profile=starting_profile                  #sets the starting profile
         self.excel_data=[]                                    #Date Time Profile Min_start Max_satrt Min_end Max_end Total_Adds
@@ -55,7 +50,6 @@ class Automate_brave:
         self.browser_opener()
         if(self.software_mode!=1):
             print(f"Data has been successfully written to {self.excel_file_path}")
-        thread_work_completed=True
 
     def excel_file_opener(self):
         """This func will open the excel file"""
@@ -69,8 +63,12 @@ class Automate_brave:
             self.ws = self.wb.active
             header = ["Date", "Time", "Profile", "Min_start", "Max_start", "Min_end", "Max_end", "Total_Adds","Min_earn","Max_earn"]  # Add header
             self.ws.append(header)
-            self.wb.save(self.excel_file_path)                       #save the workbook
-        
+            try:
+                self.wb.save(self.excel_file_path)                                         #saves the data to the excel file
+            except Exception as e:
+                print("Error: ",e,"\nYou might have currently opened excel file")
+                exit()
+
     def browser_opener(self):
         """this func will handle the browser opener"""
         os.system("start brave")              #starts edge broswer
@@ -106,41 +104,6 @@ class Automate_brave:
         pyautogui.hotkey('ctrl','t')    #opens new tab
         time.sleep(1)                   #sets delay so that new tab can open properly
         pyautogui.click(128,205)        #Random click to get out of address bar
-
-    def get_pixel_color_from_screen(self,x, y):
-        """This func will return the pixel color at the given coordinates in RGB format"""
-        screenshot = pyautogui.screenshot() #takes screenshot
-        image = Image.frombytes('RGB', screenshot.size, screenshot.tobytes())  #Convert the screenshot to a Pillow Image
-        pixel_color = image.getpixel((x, y))  # (R, G, B) tuple for coordinates (x, y)
-        return pixel_color
-        
-    def check_news_present(self):
-        """This func will check if news is present or not
-            by check the darkness of the news section
-        """
-        screenshot = pyautogui.screenshot()
-        img = np.array(screenshot) # Convert the image to a NumPy array
-        x1, y1, x2, y2 = (705, 212, 1215, 420) # Extract region of interest based on provided coordinates
-        threshold = 90 # Set threshold for determining "darkness"
-        roi = img[y1:y2, x1:x2]
-        gray_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY) # Convert the region to grayscale
-        average_brightness = np.mean(gray_roi) # Compute the average brightness within the region
-        is_dark_region = average_brightness < threshold # Determine if the region is dark based on the threshold
-        return not is_dark_region
-
-    def first_news_view(self):
-        """this func will open first news so that all the ads will show up"""
-        # https://www.digitaltrends.com/movies/underrated-amazon-prime-video-movies-winter-2024/
-        #type it using pyautogui
-        self.new_tab()
-        news_link="https://www.digitaltrends.com/movies/underrated-amazon-prime-video-movies-winter-2024/"
-        time.sleep(1)
-        pyautogui.click(574,65)
-        pyautogui.typewrite(news_link)
-        pyautogui.press('enter')
-        time.sleep(1.5)
-        pyautogui.hotkey('ctrl','w')            #closes the news view tab
-        # time.sleep(0.2)
     
     def take_screenshot(self):
         """This func will take screenshot and return it"""
@@ -157,17 +120,6 @@ class Automate_brave:
         threshold = 0.8  # Adjust this threshold based on your needs
         locations = np.where(result >= threshold)
         return len(locations[0]) > 0
-    
-    def news_activator(self):
-        """this func will activate the news is add is not showing up"""
-        self.new_tab()
-        news_link="https://www.digitaltrends.com/movies/underrated-amazon-prime-video-movies-winter-2024/"
-        time.sleep(1)
-        pyautogui.click(574,65)
-        pyautogui.typewrite(news_link)
-        pyautogui.press('enter')
-        time.sleep(1.5)
-        pyautogui.hotkey('ctrl','w')            #closes the news view tab  
 
     def current_bat_data(self):
         """this func will select the data area and return  min and max bat data"""
@@ -208,8 +160,12 @@ class Automate_brave:
             self.excel_data.append(current_data[0]-self.excel_data[3])      #appends the total profit
             self.excel_data.append(current_data[1]-self.excel_data[4])      #appends the total profit
             self.ws.append(self.excel_data)                                       #appends the data to the excel file
-            self.wb.save(self.excel_file_path)                                         #saves the data to the excel file
             self.excel_data=[]                                                     #clears the data for next profile
+            try:
+                self.wb.save(self.excel_file_path)                                         #saves the data to the excel file
+            except Exception as e:
+                print("Error: ",e,"\nYou might have currently opened excel file")
+                exit()
 
     def wait_for_news_load(self):
         """This func will wait for the news to load properly"""
@@ -250,39 +206,31 @@ class Automate_brave:
         pyautogui.hotkey('ctrl','w')            #closes the add view tab
         time.sleep(0.1)                         #waits till current tab closes
 
-    def window_maximise(self):
-        """this func will maximise the window"""
-        pyautogui.hotkey('alt','space')            #maximises the window
-        pyautogui.press('x')                       #maximises the window
-        time.sleep(0.1)
-
     def automator(self):
         """this function will handle all the process to automate particular page"""
         time.sleep(0.7)             #sets delay in pressing tabs so that browser can load properly
         self.wait_for_news_load()      #opens first news
         self.add_view_handler()     #handles all the adds to view properly
 
-def program_terimator():
+def program_terminator():
     """Terminates the whole program if 'q' is pressed or Ctrl+C is used."""
     try:
         while True:
-            if keyboard.is_pressed('q') or thread_work_completed:            #checks it 'q' is pressed
+            if keyboard.is_pressed('q'):
                 print("Jai shree ram")
-                exit()                              #terminates the whole program
-            time.sleep(0.1)                         #sets delay so that cpu can rest a bit
+                os._exit(0)  # Provide an exit code
+            time.sleep(0.1)
     except KeyboardInterrupt:
         print("\nCtrl+C detected. Terminating the program.")
-        exit()                                      #terminates the whole program
+        os._exit(0)
+
 if __name__ == '__main__':
     total_profiles=24
     total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
-    thread_work_completed = False     # Initialize the global variable
+
     software_mode = 3                 # 1 for Adds only, 2 for calculuator only, 3 for both
-    try:
-        automation_thread = threading.Thread(target=Automate_brave, args=(total_profiles,total_adds,starting_profile,software_mode,),daemon=True) #daemon is set true so that program can be terminated by pressing 'q'
-        automation_thread.start()         #starts the thread
-    except Exception as e:
-        print("Error: ",e)
-        thread_work_completed=True
-    program_terimator()               #starts the program terminator
+
+    terinator_thread = threading.Thread(target=program_terminator,args=(),daemon=True)
+    terinator_thread.start()
+    automation_thread = Automate_brave(total_profiles,total_adds,starting_profile,software_mode)
