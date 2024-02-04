@@ -172,6 +172,7 @@ class Automate_brave:
     def current_bat_data(self):
         """this func will select the data area and return  min and max bat data"""
         start_x, start_y , end_x, end_y = (1590, 640, 1845, 640) #sets the coordinates of the data area
+        time.sleep(1)                              #sets delay so that page can load properly
         pyautogui.mouseDown(start_x, start_y)        # Simulate a mouse click to start the selection
         pyautogui.moveTo(end_x, end_y, duration=0)   # Move the mouse cursor to selection area and adjust duration as needed
         pyautogui.mouseUp()                          # Release the mouse
@@ -224,7 +225,7 @@ class Automate_brave:
                     pyautogui.click(945,840)                 #clicks on the news icon
                     time.sleep(1.2)
                     return 1
-                time.sleep(1)
+                time.sleep(0.6)
             pyautogui.hotkey('ctrl','w')                     #closes the news view tab
         return -1
     
@@ -245,7 +246,6 @@ class Automate_brave:
             for _ in range(4):
                 pyautogui.press('pageup')         #scrolls up to the top of the page
             pyautogui.press('f5')               #refreshes the page for new add
-            time.sleep(0.1)
             self.excel_data_storer(2,viwed_adds)  #stores the ending bat data
         pyautogui.hotkey('ctrl','w')            #closes the add view tab
         time.sleep(0.1)                         #waits till current tab closes
@@ -274,7 +274,7 @@ def program_terimator():
         print("\nCtrl+C detected. Terminating the program.")
         exit()                                      #terminates the whole program
 if __name__ == '__main__':
-    total_profiles=2
+    total_profiles=24
     total_adds=7
     starting_profile=1                #it must be 1<=starting_profile<=total_profiles
     thread_work_completed = False     # Initialize the global variable

@@ -65,28 +65,7 @@ class Automate_brave_bat_calc:
                 ws.append(row)
         finally:
             wb.save(excel_file_path)                       #save the workbook
-            print(f"Data has been successfully written to {excel_file_path}")            
-
-    # def browser_opener(self):
-    #     """this func will open the browser and start the automation"""
-    #     for i in range(self.starting_profile,self.total_profiles):      #loops through the total profiles
-    #         print(f"Profile {i+1}")               #prints on which profile current automation is going on
-    #         os.system("start brave")              #starts edge broswer
-    #         time.sleep(2)                         #wats for 2 seconds so that browser can open successfully
-    #         pyautogui.press('tab')                #presses tab to select profile
-    #         for j in range(3*i):                  #presses tab multiple times to select exect profile
-    #             pyautogui.press('tab')
-    #             # time.sleep(0.1)                 #sets delay in pressing tabs
-    #         pyautogui.press('tab')
-    #         pyautogui.hotkey('ctrl','c')
-    #         copied_data = pyperclip.paste()
-    #         self.excel_data.append([copied_data])
-    #         pyautogui.hotkey('shift','tab')
-    #         pyautogui.press('enter')              #presses enter to open profile
-    #         # do your work here 
-    #         self.automator()                      #runs automator method to start automation works
-    #         time.sleep(0.2)                       #wait a bit so that browser is ready to close
-    #         pyautogui.hotkey('alt', 'f4')         #closing profiles to save RAM from getting full
+            print(f"Data has been successfully written to {excel_file_path}")
     
     def browser_opener(self):
         """this func will handle the browser opener"""
@@ -132,9 +111,8 @@ class Automate_brave_bat_calc:
 
     def data_area_selecter(self):
         """this func will select the data area and return the selected data"""
-        start_x, start_y = 1590, 640                 #starting coordinates
+        start_x, start_y , end_x, end_y = (1590, 640, 1845, 640) #sets the coordinates of the data area
         pyautogui.mouseDown(start_x, start_y)        # Simulate a mouse click to start the selection
-        end_x, end_y = 1845, 640                     # Ending coordinates
         pyautogui.moveTo(end_x, end_y, duration=0)   # Move the mouse cursor to selection area and adjust duration as needed
         pyautogui.mouseUp()                          # Release the mouse
         pyautogui.hotkey('ctrl', 'c')                #copy the selected text
